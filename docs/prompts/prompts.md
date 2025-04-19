@@ -537,3 +537,95 @@ Librerías: Music21, PrettyMIDI, Tone.js, VexFlow, Magenta (opcional).
 Framework: React para la interfaz, Pyodide para ejecutar Python en el navegador.
 Infraestructura: GitHub para control de versiones, Docker para despliegue.
 
+Prompt para IA de Armonía
+Descripción
+Desarrollar un módulo de IA que cree y analice progresiones armónicas basadas en tonalidad, nivel, y estilo musical, con partituras, audio, y ejercicios interactivos. Se integra con Music21, Tone.js, y VexFlow.
+Requisitos
+
+Generación de Progresiones
+- Entrada: Tonalidad, nivel, estilo, duración, tipo de cadencia.
+- Salida: Progresión en MusicXML, partitura (VexFlow), audio (Tone.js).
+- Funcionalidades: Acordes diatónicos, secundarios, análisis de grados.
+
+Ejercicios Interactivos
+- Identificar acordes/cadencias, completar progresiones, corregir errores.
+
+Integración con Librerías
+- Music21, PrettyMIDI, Tone.js, VexFlow, Magenta.
+
+Interacción con el Usuario
+- Flujo: Selecciona parámetros, genera progresión, muestra partitura/audio, realiza ejercicio, evalúa.
+- Feedback: "Correcto, es una cadencia perfecta."
+
+Soporte Multilingüe
+- Explicaciones y feedback en múltiples idiomas con i18next y mBART.
+
+Ejemplo
+Usuario: "Progresión en Do mayor, nivel intermedio, estilo pop, cadencia perfecta."
+IA: Genera C-G-Am-F, muestra partitura, reproduce audio, pregunta: "¿Qué tipo de cadencia es?"
+
+Instrucciones para Desarrolladores
+- Usar Music21 para progresiones, VexFlow para partituras, Tone.js para audio.
+- Probar con usuarios de diferentes niveles.
+
+Prompt para IA de Apreciación Musical
+Descripción
+Desarrollar un módulo de IA que analice obras musicales (historia, estilo) con ejemplos sonoros y ejercicios interactivos. Se integra con Music21, Tone.js, y VexFlow.
+Requisitos
+
+Análisis de Obras
+- Entrada: Obra/compositor, nivel, idioma.
+- Salida: Análisis histórico/estilístico, partitura (VexFlow), audio (Tone.js).
+
+Ejercicios Interactivos
+- Identificar formas musicales, analizar elementos, relacionar con contexto histórico.
+
+Integración con Librerías
+- Music21, PrettyMIDI, Tone.js, VexFlow, mBART.
+
+Interacción con el Usuario
+- Flujo: Selecciona obra, muestra análisis/partitura/audio, realiza ejercicio, evalúa.
+- Feedback: "Correcto, el primer movimiento es en forma sonata."
+
+Soporte Multilingüe
+- Análisis y feedback en múltiples idiomas con i18next y mBART.
+
+Ejemplo
+Usuario: "Analiza la Sinfonía No. 5 de Beethoven, nivel principiante, en español."
+IA: Explica: "Compuesta en 1808, famosa por 'ta-ta-ta-tam'." Muestra partitura, reproduce motivo, pregunta: "¿Qué forma usa el primer movimiento?"
+
+Instrucciones para Desarrolladores
+- Usar Music21 para análisis, VexFlow para partituras, Tone.js para audio.
+- Probar con usuarios de diferentes niveles.
+
+Prompt para IA de Interfaz
+Descripción
+Desarrollar un módulo de IA que coordine los módulos educativos, gestione la interacción del usuario, y personalice la experiencia, integrándose con React, VexFlow, Tone.js, y mBART.
+Requisitos
+
+Gestión de Módulos
+- Mostrar menú principal, permitir configurar parámetros, coordinar módulos, almacenar progreso.
+
+Personalización
+- Adaptar al nivel del usuario, recomendar ejercicios, permitir cambiar idioma/tema.
+
+Navegación
+- Usar React Router, diseño responsivo, incluir panel de donaciones.
+
+Integración con Librerías
+- React, VexFlow, Tone.js, Music21, mBART, ethers.js, Stripe, PayPal.
+
+Interacción con el Usuario
+- Flujo: Selecciona módulo, carga componente, interactúa, procesa entrada, da feedback.
+- Feedback: Mensajes personalizados, visualización de progreso.
+
+Soporte Multilingüe
+- Interfaz en múltiples idiomas con i18next y mBART.
+
+Ejemplo
+Usuario: Selecciona "Generación Rítmica" en 4/4, nivel principiante, español.
+IA: Carga componente, muestra formulario, genera ritmo, renderiza partitura, reproduce audio.
+
+Instrucciones para Desarrolladores
+- Usar React Router, implementar estado global, integrar VexFlow, Tone.js, Music21.
+- Configurar i18next, añadir donaciones con MetaMask, Stripe, PayPal.

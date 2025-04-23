@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, Linking, Platform } from 'react-native';
+import { WebView } from 'react-native-webview';
 import * as Tone from 'tone';
 import { ethers } from 'ethers';
 
@@ -33,42 +34,14 @@ const App = () => {
       const metamaskUrl = 'metamask://';
       const supported = await Linking.canOpenURL(metamaskUrl);
       if (!supported) {
-        const url = Platform.OS === 'ios' ? 'https://apps.apple.com/app/metamask/id1438144202' : 'https://play.google.com/store/apps/details?id=io.metamask';
+        const url = Platform.OS === 'android' ? 'https://play.google.com/store/apps/details?id=io.metamask' : 'https://apps.apple.com/app/metamask/id1438144202';
         await Linking.openURL(url);
         setError('Por favor instala MetaMask');
         return;
       }
 
       await Linking.openURL(metamaskUrl);
-
-      if (!window.ethereum) {
-        setError('MetaMask no detectado. Asegúrate de que esté conectado.');
-        return;
-      }
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send('eth_requestAccounts', []);
-      const network = await provider.getNetwork();
-
-      if (network.chainId !== 137n) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x89' }],
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [polygonMainnet],
-            });
-          } else {
-            throw switchError;
-          }
-        }
-      }
-
-      setConnected(!!accounts[0]);
+      setConnected(true);
       setError(null);
     } catch (err) {
       setError(`Error: ${err.message}`);
@@ -83,19 +56,6 @@ const App = () => {
     if (!email) {
       setError('Por favor ingresa tu correo electrónico');
       return;
-    }
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const tx = await signer.sendTransaction({
-        to: '0x2a0EeC585528C3FF59f957ca78acF3270163a6E8',
-        value: ethers.parseEther(amount),
-      });
-      await tx.wait();
-      setSuccess(true);
-      setError(null);
-    } catch (err) {
-      setError(`Error: ${err.message}`);
     }
   };
 
@@ -125,9 +85,44 @@ const App = () => {
           <Text style={styles.buttonText}>Conectar MetaMask</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={styles.button} onPress={donate}>
-          <Text style={styles.buttonText}>Donar {amount} MATIC</Text>
-        </TouchableOpacity>
+        <WebView
+          style={{ width: '100%', height: 300 }}
+          source={{
+            html: `
+              <html>
+                <body>
+                  <h2>Donar ${amount} MATIC</h2>
+                  <button onclick="connect()">Conectar MetaMask</button>
+                  <button onclick="donate()">Donar</button>
+                  <p id="status"></p>
+                  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+                  <script>
+                    async function connect() {
+                      if (typeof window.ethereum !== 'undefined') {
+                        await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        document.getElementById('status').innerText = 'Conectado';
+                      } else {
+                        document.getElementById('status').innerText = 'MetaMask no detectado';
+                      }
+                    }
+                    async function donate() {
+                      if (typeof window.ethereum !== 'undefined') {
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const signer = provider.getSigner();
+                        const tx = await signer.sendTransaction({
+                          to: '0x2a0EeC585528C3FF59f957ca78acF3270163a6E8',
+                          value: ethers.utils.parseEther('${amount}'),
+                        });
+                        await tx.wait();
+                        document.getElementById('status').innerText = '¡Donación enviada!';
+                      }
+                    }
+                  </script>
+                </body>
+              </html>
+            `,
+          }}
+        />
       )}
       {error && <Text style={styles.error}>{error}</Text>}
       {success && <Text style={styles.success}>¡Donación enviada! Gracias.</Text>}

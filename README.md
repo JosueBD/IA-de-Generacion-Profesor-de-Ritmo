@@ -118,14 +118,21 @@ MIT License - Usa y modifica el código libremente.
 Contacto
 
 Autor: Josué BD (GitHub)
+
 Correo: josuepjnv@gmail.com
+
+
 Comunidad: [Añade Discord o foro si lo creas]
 
 Donaciones
 Apoya el acceso gratuito:
 
-MetaMask: 0x2a0EeC585528C3FF59f957ca78acF3270163a6E8.
+MetaMask: 0x2a0EeC585528C3FF59f957ca78acF3270163a6E8
+
+
 Stripe: [Añade enlace de Stripe].
+
+
 Open Collective: [Añade enlace de Open Collective].
 
 

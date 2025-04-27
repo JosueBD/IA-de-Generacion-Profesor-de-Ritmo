@@ -114,11 +114,10 @@ Infraestructura: GitHub, Docker, AWS/Google Cloud.
 Financiación: MetaMask (Polygon), Stripe, Open Collective.
 
 Licencia
-MIT License - Usa y modifica el código libremente.
+MIT License - https://github.com/JosueBD/IA-de-Generacion-Profesor-de-Ritmo/edit/main/LICENSE
+
 Contacto
-
 Autor: Josué BD (GitHub)
-
 Correo: josuepjnv@gmail.com
 
 
@@ -126,12 +125,8 @@ Comunidad: [Añade Discord o foro si lo creas]
 
 Donaciones
 Apoya el acceso gratuito:
-
 MetaMask: 0x2a0EeC585528C3FF59f957ca78acF3270163a6E8
-
-
 Stripe: [Añade enlace de Stripe].
-
 
 Open Collective: [Añade enlace de Open Collective].
 

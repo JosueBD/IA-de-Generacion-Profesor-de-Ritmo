@@ -23,4 +23,4 @@
 ## Contacto
 
 - Repositorio: https://github.com/JosueBD/IA-de-Generacion-Profesor-de-Ritmo
-- Autor: Josué BD
+- Autor: Josué Borges Díaz

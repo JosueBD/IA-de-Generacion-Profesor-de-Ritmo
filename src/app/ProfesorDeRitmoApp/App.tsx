@@ -1,8 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Linking, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Tone from 'tone';
+import { Vex } from 'vexflow';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
 import { ethers } from 'ethers';
+
+// Configuración de i18next
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      es: { translation: { title: 'Profesor de Ritmo', generate: 'Generar Ritmo', theory: 'Teoría', dictation: 'Dictado', instruments: 'Instrumentos', donate: 'Donar', connect: 'Conectar MetaMask', feedbackCorrect: '¡Correcto!', feedbackWrong: 'Inténtalo de nuevo' } },
+      he: { translation: { title: 'מורה לקצב', generate: 'ליצור קצב', theory: 'תיאוריה', dictation: 'דיקטציה', instruments: 'כלים', donate: 'לתרום', connect: 'חבר למטהמאסק', feedbackCorrect: 'נכון!', feedbackWrong: 'נסה שוב' } },
+      en: { translation: { title: 'Rhythm Professor', generate: 'Generate Rhythm', theory: 'Theory', dictation: 'Dictation', instruments: 'Instruments', donate: 'Donate', connect: 'Connect MetaMask', feedbackCorrect: 'Correct!', feedbackWrong: 'Try again' } },
+      pt: { translation: { title: 'Professor de Ritmo', generate: 'Gerar Ritmo', theory: 'Teoria', dictation: 'Ditado', instruments: 'Instrumentos', donate: 'Doar', connect: 'Conectar MetaMask', feedbackCorrect: 'Correto!', feedbackWrong: 'Tente novamente' } },
+      fr: { translation: { title: 'Professeur de Rythme', generate: 'Générer Rythme', theory: 'Théorie', dictation: 'Dictée', instruments: 'Instruments', donate: 'Donner', connect: 'Connecter MetaMask', feedbackCorrect: 'Correct!', feedbackWrong: 'Réessayez' } },
+      it: { translation: { title: 'Professore di Ritmo', generate: 'Genera Ritmo', theory: 'Teoria', dictation: 'Dettato', instruments: 'Strumenti', donate: 'Dona', connect: 'Collega MetaMask', feedbackCorrect: 'Corretto!', feedbackWrong: 'Riprova' } },
+      ja: { translation: { title: 'リズム教授', generate: 'リズムを生成', theory: '理論', dictation: ' dictation', instruments: '楽器', donate: '寄付', connect: 'MetaMaskに接続', feedbackCorrect: '正しい!', feedbackWrong: 'もう一度試してください' } },
+      ko: { translation: { title: '리듬 교수', generate: '리듬 생성', theory: '이론', dictation: '독본', instruments: '악기', donate: '기부', connect: 'MetaMask 연결', feedbackCorrect: '정확함!', feedbackWrong: '다시 시도하세요' } },
+    },
+    lng: 'es', // Idioma nativo español
+    fallbackLng: 'es',
+  });
 
 const App = () => {
   const [connected, setConnected] = useState(false);
@@ -10,14 +31,9 @@ const App = () => {
   const [amount, setAmount] = useState('0.01');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
-  const polygonMainnet = {
-    chainId: '0x89',
-    chainName: 'Polygon Mainnet',
-    rpcUrls: ['https://polygon-rpc.com'],
-    nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-    blockExplorerUrls: ['https://polygonscan.com'],
-  };
+  const [exercise, setExercise] = useState('');
+  const [userAnswer, setUserAnswer] = useState('');
+  const [feedback, setFeedback] = useState('');
 
   const playRhythm = async () => {
     await Tone.start();
@@ -25,155 +41,130 @@ const App = () => {
     const now = Tone.now();
     synth.triggerAttackRelease('C4', '4n', now);
     synth.triggerAttackRelease('C4', '4n', now + 0.5);
-    synth.triggerAttackRelease('C4', '4n', now + 1.0);
-    synth.triggerAttackRelease('C4', '4n', now + 1.5);
   };
 
   const connectWallet = async () => {
     try {
       const metamaskUrl = 'metamask://';
-      const supported = await Linking.canOpenURL(metamaskUrl);
-      if (!supported) {
+      if (!(await Linking.canOpenURL(metamaskUrl))) {
         const url = Platform.OS === 'android' ? 'https://play.google.com/store/apps/details?id=io.metamask' : 'https://apps.apple.com/app/metamask/id1438144202';
         await Linking.openURL(url);
-        setError('Por favor instala MetaMask');
+        setError(i18n.t('connect'));
         return;
       }
-
       await Linking.openURL(metamaskUrl);
       setConnected(true);
       setError(null);
     } catch (err) {
-      setError(`Error: ${err.message}`);
+      setError(`${err.message}`);
     }
   };
 
   const donate = async () => {
     if (!connected) {
-      setError('Por favor conecta MetaMask primero');
+      setError(i18n.t('connect'));
       return;
     }
     if (!email) {
-      setError('Por favor ingresa tu correo electrónico');
+      setError(i18n.t('emailRequired'));
       return;
+    }
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const tx = await signer.sendTransaction({
+        to: '0x2a0EeC585528C3FF59f957ca78acF3270163a6E8',
+        value: ethers.parseEther(amount),
+      });
+      await tx.wait();
+      setSuccess(true);
+      setError(null);
+    } catch (err) {
+      setError(`${err.message}`);
+    }
+  };
+
+  const generateExercise = async (type) => {
+    const response = await fetch(`http://localhost:5000/${type}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lang: i18n.language, tempo: 120, beats: 4 }),
+    });
+    const data = await response.json();
+    setExercise(data[type] || data.message);
+    setFeedback('');
+    setUserAnswer('');
+    if (type === 'generate-rhythm') playRhythm();
+  };
+
+  const checkAnswer = () => {
+    // Simulación básica de verificación (en un entorno real, compararía con el backend)
+    if (userAnswer.toLowerCase() === 'ta ta ta ta') {
+      setFeedback(i18n.t('feedbackCorrect'));
+    } else {
+      setFeedback(i18n.t('feedbackWrong'));
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profesor de Ritmo</Text>
-      <TouchableOpacity style={styles.button} onPress={playRhythm}>
-        <Text style={styles.buttonText}>Reproducir Ritmo</Text>
-      </TouchableOpacity>
-      <Text style={styles.subtitle}>Dona para apoyar el proyecto</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="tu@correo.com"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Monto (MATIC)"
-        value={amount}
-        onChangeText={setAmount}
-        keyboardType="numeric"
-      />
+      <Text style={styles.title}>{i18n.t('title')}</Text>
+      <View>
+        <TouchableOpacity style={styles.button} onPress={() => generateExercise('generate-rhythm')}>
+          <Text style={styles.buttonText}>{i18n.t('generate')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => generateExercise('get-theory')}>
+          <Text style={styles.buttonText}>{i18n.t('theory')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => generateExercise('generate-melodic-dictation')}>
+          <Text style={styles.buttonText}>{i18n.t('dictation')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => generateExercise('identify-instruments')}>
+          <Text style={styles.buttonText}>{i18n.t('instruments')}</Text>
+        </TouchableOpacity>
+        {exercise && (
+          <View>
+            <Text>{exercise}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={i18n.t('answer')}
+              value={userAnswer}
+              onChangeText={setUserAnswer}
+            />
+            <TouchableOpacity style={styles.button} onPress={checkAnswer}>
+              <Text style={styles.buttonText}>{i18n.t('submit')}</Text>
+            </TouchableOpacity>
+            {feedback && <Text style={styles.feedback}>{feedback}</Text>}
+          </View>
+        )}
+      </View>
+      <Text>{i18n.t('donate')}</Text>
+      <TextInput style={styles.input} placeholder="tu@correo.com" value={email} onChangeText={setEmail} />
+      <TextInput style={styles.input} placeholder="Monto (MATIC)" value={amount} onChangeText={setAmount} />
       {!connected ? (
         <TouchableOpacity style={styles.button} onPress={connectWallet}>
-          <Text style={styles.buttonText}>Conectar MetaMask</Text>
+          <Text style={styles.buttonText}>{i18n.t('connect')}</Text>
         </TouchableOpacity>
       ) : (
-        <WebView
-          style={{ width: '100%', height: 300 }}
-          source={{
-            html: `
-              <html>
-                <body>
-                  <h2>Donar ${amount} MATIC</h2>
-                  <button onclick="connect()">Conectar MetaMask</button>
-                  <button onclick="donate()">Donar</button>
-                  <p id="status"></p>
-                  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
-                  <script>
-                    async function connect() {
-                      if (typeof window.ethereum !== 'undefined') {
-                        await window.ethereum.request({ method: 'eth_requestAccounts' });
-                        document.getElementById('status').innerText = 'Conectado';
-                      } else {
-                        document.getElementById('status').innerText = 'MetaMask no detectado';
-                      }
-                    }
-                    async function donate() {
-                      if (typeof window.ethereum !== 'undefined') {
-                        const provider = new ethers.providers.Web3Provider(window.ethereum);
-                        const signer = provider.getSigner();
-                        const tx = await signer.sendTransaction({
-                          to: '0x2a0EeC585528C3FF59f957ca78acF3270163a6E8',
-                          value: ethers.utils.parseEther('${amount}'),
-                        });
-                        await tx.wait();
-                        document.getElementById('status').innerText = '¡Donación enviada!';
-                      }
-                    }
-                  </script>
-                </body>
-              </html>
-            `,
-          }}
-        />
+        <TouchableOpacity style={styles.button} onPress={donate}>
+          <Text style={styles.buttonText}>{i18n.t('donate')}</Text>
+        </TouchableOpacity>
       )}
       {error && <Text style={styles.error}>{error}</Text>}
-      {success && <Text style={styles.success}>¡Donación enviada! Gracias.</Text>}
+      {success && <Text style={styles.success}>{i18n.t('success')}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  subtitle: {
-    fontSize: 18,
-    marginVertical: 10,
-  },
-  button: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  input: {
-    width: '80%',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginVertical: 10,
-  },
-  error: {
-    color: 'red',
-    marginTop: 10,
-  },
-  success: {
-    color: 'green',
-    marginTop: 10,
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  button: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, margin: 5 },
+  buttonText: { color: '#fff', fontSize: 16 },
+  input: { width: '80%', padding: 10, borderWidth: 1, borderRadius: 5, margin: 5 },
+  error: { color: 'red', marginTop: 10 },
+  success: { color: 'green', marginTop: 10 },
+  feedback: { marginTop: 10, color: 'blue' },
 });
 
 export default App;

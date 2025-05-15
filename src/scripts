@@ -1,1 +1,6 @@
-
+#!/bin/bash
+echo "Configurando el proyecto..."
+cd src/web && npm install
+cd ../app/ProfesorDeRitmoApp && npm install
+cd ../../backend && pip install -r requirements.txt
+echo "Configuración completada."

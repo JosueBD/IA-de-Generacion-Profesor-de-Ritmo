@@ -1,1 +1,33 @@
+from flask import Flask, request, jsonify
 
+app = Flask(__name__)
+
+# Soporte multilingüe básico
+translations = {
+    "es": {"rhythm": "Ritmo", "theory": "Teoría"},
+    "en": {"rhythm": "Rhythm", "theory": "Theory"},
+    "fr": {"rhythm": "Rythme", "theory": "Théorie"},
+}
+
+@app.route('/generate-rhythm', methods=['POST'])
+def generate_rhythm():
+    data = request.json
+    tempo = data.get('tempo', 120)
+    beats = data.get('beats', 4)
+    lang = data.get('lang', 'es')
+    rhythm = f"{translations[lang]['rhythm']} a {tempo} BPM con {beats} beats: [{'ta ' * beats}]"
+    return jsonify({'rhythm': rhythm.strip()})
+
+@app.route('/get-theory', methods=['POST'])
+def get_theory():
+    data = request.json
+    topic = data.get('topic', 'compás')
+    lang = data.get('lang', 'es')
+    theory = {
+        "compás": translations[lang]['theory'] + ": Un compás organiza los tiempos. Ejemplo: 4/4 significa 4 tiempos.",
+        "escala": translations[lang]['theory'] + ": Una escala es una secuencia de notas. Ejemplo: C mayor: C, D, E, F, G, A, B, C."
+    }
+    return jsonify({'theory': theory.get(topic, f"{translations[lang]['theory']} no encontrada.")})
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

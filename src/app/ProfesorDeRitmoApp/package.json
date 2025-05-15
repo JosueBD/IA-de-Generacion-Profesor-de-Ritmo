@@ -40,9 +40,3 @@
     "node": ">=18"
   }
 }
-  "engines": {
-    "node": ">=18"
-  }
-}
- cf88e81 (Actualizo package.json con ethers y tone)
-

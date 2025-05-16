@@ -117,7 +117,7 @@ Licencia
 MIT License - https://github.com/JosueBD/IA-de-Generacion-Profesor-de-Ritmo/blob/main/LICENSE
 
 Contacto
-Autor: Josué BD (GitHub)
+Autor: Josué Borges Díaz (GitHub)
 Correo: josuepjnv@gmail.com
 
 

@@ -6,6 +6,9 @@ import numpy as np
 import magenta
 import tensorflow as tf
 from magenta.models.drums_rnn import drums_rnn_sequence_generator
+import os
+import subprocess
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -20,13 +23,57 @@ def get_locale():
     supported_langs = ['es', 'he', 'en', 'pt', 'fr', 'it', 'ja', 'ko']
     return lang if lang in supported_langs else 'es'
 
+# Nota: La carpeta models/ contiene subcarpetas drumm_rnn_model/ e instrument_classifier/
+# con scripts para descargar los modelos dinámicamente.
+# Asegurarse de que el modelo de Magenta exista
+magenta_model_path = 'models/drumm_rnn_model/drumm_rnn.mag'
+if not os.path.exists(magenta_model_path):
+    subprocess.run(['bash', 'models/drumm_rnn_model/download_model.sh'])
+
+# Asegurarse de que YAMNet exista
+yamnet_model_path = 'models/instrument_classifier/model'
+if not os.path.exists(yamnet_model_path):
+    subprocess.run(['python', 'models/instrument_classifier/download_yamnet.py'])
+
+# Asegurarse de que los archivos de datos existan
+midi_file_path = 'data/sample_midi.mid'
+wav_file_path = 'data/sample.wav'
+if not os.path.exists(midi_file_path) or not os.path.exists(wav_file_path):
+    subprocess.run(['bash', 'data/download_data.sh'])
+
 # Cargar modelo de Magenta para generación de ritmos
 bundle = magenta.music.sequence_generator_bundle.read_bundle_file('models/drumm_rnn_model/drumm_rnn.mag')
 generator = drums_rnn_sequence_generator.DrumsRnnSequenceGenerator()
 generator.initialize()
 
-# Cargar modelo de clasificación de instrumentos (simulado)
-instrument_classifier = tf.keras.models.load_model('models/instrument_classifier')
+# Cargar modelo de clasificación de instrumentos (YAMNet)
+instrument_classifier = tf.saved_model.load('models/instrument_classifier/model')
+
+# Cargar las etiquetas de YAMNet
+class_map = pd.read_csv('models/instrument_classifier/yamnet_class_map.csv')
+class_names = class_map['display_name'].tolist()
+
+# Base de datos de obras para apreciación musical
+WORKS = {
+    "beethoven_symphony_5": {
+        "title": "Sinfonía No. 5",
+        "composer": "Ludwig van Beethoven",
+        "year": 1808,
+        "analysis": "Obra en do menor con un motivo rítmico icónico (ta-ta-ta-TA). Usa una estructura de sonata con cuatro movimientos."
+    },
+    "mozart_requiem": {
+        "title": "Requiem en re menor, K. 626",
+        "composer": "Wolfgang Amadeus Mozart",
+        "year": 1791,
+        "analysis": "Obra coral inacabada, con un Lacrimosa emotivo. Estructura litúrgica con secciones como Introitus y Dies Irae."
+    },
+    "chopin_nocturne": {
+        "title": "Nocturne en mi bemol mayor, Op. 9 No. 2",
+        "composer": "Frédéric Chopin",
+        "year": 1832,
+        "analysis": "Pieza para piano solo, con un estilo melódico lírico y armonías románticas. Forma ternaria (ABA)."
+    }
+}
 
 # Endpoint para generar ritmos
 @app.route('/generate-rhythm', methods=['POST'])
@@ -50,24 +97,39 @@ def generate_rhythm():
         'correct_answer': 'ta ' * beats if style == 'classical' else 'ta-ka ta ' * (beats // 2)
     })
 
-# Endpoint para dictado melódico
-@app.route('/generate-melodic-dictation', methods=['POST'])
-def generate_melodic_dictation():
+# Endpoint para generar armonías
+@app.route('/generate-harmony', methods=['POST'])
+def generate_harmony():
     data = request.json
-    key = data.get('key', 'C major')
-    length = data.get('length', 4)
+    key = data.get('key', 'C')
+    style = data.get('style', 'basic')
+    chords = []
 
-    stream = music21.stream.Stream()
-    scale = music21.scale.MajorScale(key)
-    notes = scale.getPitches('C4', 'C5')
-    melody = [music21.note.Note(np.random.choice(notes)) for _ in range(length)]
-    stream.extend(melody)
-    midi = stream.write('midi', fp='temp_melody.mid')
+    if style == "basic":
+        chords = ['I', 'IV', 'V', 'I']  # Progresión básica I-IV-V-I
+    elif style == "jazz":
+        # Progresión ii-V-I
+        roman = ['ii', 'V', 'I']
+        key_obj = music21.key.Key(key)
+        for r in roman:
+            chord = music21.roman.RomanNumeral(r, key_obj)
+            chords.append(chord.figure)
+    elif style == "modulation":
+        # Progresión con modulación (I-IV-V en tonalidad inicial, luego V-I en nueva tonalidad)
+        key_obj = music21.key.Key(key)
+        new_key = key_obj.getRelativeMinor().tonicPitchNameWithCase
+        chords = [
+            music21.roman.RomanNumeral('I', key_obj).figure,
+            music21.roman.RomanNumeral('IV', key_obj).figure,
+            music21.roman.RomanNumeral('V', key_obj).figure,
+            music21.roman.RomanNumeral('V', new_key).figure,
+            music21.roman.RomanNumeral('I', new_key).figure
+        ]
 
     return jsonify({
-        'melody': _(f"Melodía en {key} con {length} notas"),
-        'midi': midi,
-        'correct_answer': ' '.join([n.name for n in melody])
+        'key': key,
+        'chords': chords,
+        'message': _(f"Progresión armónica en {key} ({style})")
     })
 
 # Endpoint para identificar instrumentos
@@ -76,79 +138,35 @@ def identify_instruments():
     data = request.json
     audio_file = data.get('audio_file', 'data/sample.wav')
     y, sr = librosa.load(audio_file)
-    features = librosa.feature.mfcc(y=y, sr=sr)
-    prediction = instrument_classifier.predict(features)
-    instruments = ['piano', 'drum'][np.argmax(prediction)]
-
+    # Ajustar el audio para YAMNet (mono, 16kHz)
+    y = librosa.resample(y, orig_sr=sr, target_sr=16000)
+    # YAMNet espera una forma específica
+    waveform = y[None, :]
+    scores, _, _ = instrument_classifier(waveform)
+    prediction = np.argmax(scores, axis=1)[0]
+    instrument = class_names[prediction]
     return jsonify({
-        'instruments': instruments,
-        'count': len(instruments),
-        'message': _(f"Se detectaron {len(instruments)} instrumentos"),
-        'correct_answer': ', '.join(instruments)
-    })
-
-# Endpoint para teoría musical
-@app.route('/get-theory', methods=['POST'])
-def get_theory():
-    data = request.json
-    topic = data.get('topic', 'compás')
-    theory = {
-        'compás': _("Un compás organiza los tiempos. Ejemplo: 4/4 significa 4 tiempos."),
-        'escala': _("Una escala es una secuencia de notas. Ejemplo: C mayor: C, D, E, F, G, A, B, C.")
-    }
-    return jsonify({
-        'theory': theory.get(topic, _("Teoría no encontrada."))
-    })
-
-# Endpoint para generar armonía
-@app.route('/generate-harmony', methods=['POST'])
-def generate_harmony():
-    data = request.json
-    key = data.get('key', 'C major')
-    chords = data.get('chords', 4)
-
-    roman = music21.roman.RomanNumeral(['I', 'IV', 'V', 'I'][:(chords % 4) or 4], key)
-    stream = music21.stream.Stream()
-    for rn in roman:
-        stream.append(rn)
-
-    midi = stream.write('midi', fp='temp_harmony.mid')
-    return jsonify({
-        'harmony': _(f"Progresión de acordes en {key}: {'-'.join([str(r) for r in roman])}"),
-        'midi': midi
+        'instruments': [instrument],
+        'count': 1,
+        'message': _(f"Se detectó 1 instrumento: {instrument}"),
+        'correct_answer': instrument
     })
 
 # Endpoint para apreciación musical
 @app.route('/appreciate-music', methods=['POST'])
 def appreciate_music():
     data = request.json
-    piece = data.get('piece', 'beethoven_symphony_5')
-
-    pieces = {
-        'beethoven_symphony_5': {
-            'title': 'Sinfonía No. 5 de Beethoven',
-            'description': 'Esta pieza es famosa por su motivo inicial de cuatro notas (da-da-da-dum), que representa el "destino tocando a la puerta". Compuesta en 1808, es un ejemplo clásico del período romántico temprano.'
-        }
-    }
-    piece_info = pieces.get(piece, {'title': 'Pieza desconocida', 'description': 'No se encontró información.'})
-
+    work_id = data.get('work_id', 'beethoven_symphony_5')
+    if work_id not in WORKS:
+        return jsonify({'error': 'Obra no encontrada'}), 404
+    work = WORKS[work_id]
     return jsonify({
-        'title': _(piece_info['title']),
-        'description': _(piece_info['description'])
+        'title': work['title'],
+        'composer': work['composer'],
+        'year': work['year'],
+        'analysis': work['analysis'],
+        'message': _(f"Análisis de {work['title']} por {work['composer']}")
     })
 
-# Endpoint para validar respuestas
-@app.route('/check-answer', methods=['POST'])
-def check_answer():
-    data = request.json
-    user_answer = data.get('answer', '').lower().strip()
-    correct_answer = data.get('exercise', '').lower().split('correct_answer: ')[1] if 'correct_answer' in data.get('exercise', '') else data.get('correct_answer', '')
-
-    is_correct = user_answer == correct_answer
-    return jsonify({
-        'feedback': _(f"¡Correcto!" if is_correct else f"Incorrecto. La respuesta correcta es {correct_answer}"),
-        'correct': is_correct
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)

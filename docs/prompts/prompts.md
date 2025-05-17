@@ -12,6 +12,27 @@ Práctica de lectura: Generar ejercicios de lectura de partituras rítmicas y me
 Armonía: Generar y analizar progresiones armónicas. Ejemplo: "Crea una progresión en La menor con una cadencia perfecta."
 Apreciación musical: Proporcionar contexto histórico y análisis de obras. Ejemplo: "Describe el contexto de la Sinfonía No. 5 de Beethoven."
 
+# Prompts para IA Generativa
+
+## Generación de Ritmos
+- "Genera un ritmo clásico a 120 BPM con 4 pulsos."
+- "Crea un ritmo de jazz a 90 BPM con 6 pulsos."
+
+## Generación de Armonías
+- "Genera una progresión armónica en Do mayor con estilo básico."
+- "Crea una progresión ii-V-I en La bemol mayor."
+- "Genera una progresión con modulación de Re mayor a Si menor."
+
+## Identificación de Instrumentos
+- "Identifica los instrumentos en este archivo de audio: data/sample.wav."
+
+## Apreciación Musical
+- "Analiza la Sinfonía No. 5 de Beethoven."
+- "Proporciona un análisis del Nocturne Op. 9 No. 2 de Chopin."
+
+## Edición de Partituras
+- "Crea una partitura en 3/4 con clave de fa y un silencio de negra."
+
 Funcionalidades:
 
 Niveles de dificultad (principiante, intermedio, avanzado).

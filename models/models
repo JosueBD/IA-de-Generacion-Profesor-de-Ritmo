@@ -1,0 +1,13 @@
+# Modelos de IA Preentrenados
+
+Esta carpeta contiene modelos de IA preentrenados para generar ritmos, armonías, dictados rítmicos y explicaciones personalizadas.
+
+## Archivos
+- `rhythm_generator_model.h5`: Modelo de ejemplo (placeholder). En el futuro, incluirá un modelo entrenado con los datasets de `data/`.
+
+## Fuentes recomendadas
+- **Hugging Face**: https://huggingface.co/models?filter=music (ejemplo: MusicGen).
+- **Magenta**: https://github.com/magenta/magenta.
+- Entrena modelos usando TensorFlow o PyTorch con los datos de `data/`.
+
+Estos modelos serán usados por el backend (`src/backend`) para las funcionalidades de IA generativa.

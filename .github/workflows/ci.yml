@@ -1,0 +1,36 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Install backend dependencies
+      run: |
+        pip install -r src/backend/requirements.txt
+    - name: Run backend tests
+      run: |
+        python -m unittest discover -s tests -p "test_*.py"
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    - name: Install web dependencies
+      run: |
+        cd src/web
+        npm install
+    - name: Install app dependencies
+      run: |
+        cd src/app/ProfesorDeRitmoApp
+        npm install

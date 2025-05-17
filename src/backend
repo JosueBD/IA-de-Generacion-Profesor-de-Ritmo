@@ -3,6 +3,9 @@ from flask_babel import Babel, _
 import music21
 import librosa
 import numpy as np
+import magenta
+import tensorflow as tf
+from magenta.models.drums_rnn import drums_rnn_sequence_generator
 
 app = Flask(__name__)
 
@@ -17,6 +20,14 @@ def get_locale():
     supported_langs = ['es', 'he', 'en', 'pt', 'fr', 'it', 'ja', 'ko']
     return lang if lang in supported_langs else 'es'
 
+# Cargar modelo de Magenta para generación de ritmos
+bundle = magenta.music.sequence_generator_bundle.read_bundle_file('models/drumm_rnn_model/drumm_rnn.mag')
+generator = drums_rnn_sequence_generator.DrumsRnnSequenceGenerator()
+generator.initialize()
+
+# Cargar modelo de clasificación de instrumentos (simulado)
+instrument_classifier = tf.keras.models.load_model('models/instrument_classifier')
+
 # Endpoint para generar ritmos
 @app.route('/generate-rhythm', methods=['POST'])
 def generate_rhythm():
@@ -25,18 +36,15 @@ def generate_rhythm():
     beats = data.get('beats', 4)
     style = data.get('style', 'classical')
 
+    # Usar Magenta para generar un ritmo
+    drum_track = generator.generate({}, seconds=beats / (tempo / 60))
     stream = music21.stream.Stream()
     stream.append(music21.tempo.MetronomeMark(number=tempo))
-    if style == 'jazz':
-        rhythm_pattern = [music21.note.Note('C4', quarterLength=0.5), music21.note.Rest(quarterLength=0.5)] * beats
-    elif style == 'latin':
-        rhythm_pattern = [music21.note.Note('C4', quarterLength=1.0), music21.note.Note('C4', quarterLength=0.5)] * beats
-    else:
-        rhythm_pattern = [music21.note.Note('C4', quarterLength=1.0)] * beats
+    for event in drum_track.events:
+        if event.note:
+            stream.append(music21.note.Note('C4', quarterLength=event.duration))
 
-    stream.extend(rhythm_pattern)
     midi = stream.write('midi', fp='temp.mid')
-
     return jsonify({
         'rhythm': _(f"Ritmo a {tempo} BPM con {beats} pulsos"),
         'midi': midi,
@@ -67,9 +75,11 @@ def generate_melodic_dictation():
 @app.route('/identify-instruments', methods=['POST'])
 def identify_instruments():
     data = request.json
-    audio_file = data.get('audio_file', 'sample.wav')
+    audio_file = data.get('audio_file', 'data/sample.wav')
     y, sr = librosa.load(audio_file)
-    instruments = ['piano', 'drum'] if len(librosa.onset.onset_detect(y=y, sr=sr)) > 5 else ['piano']
+    features = librosa.feature.mfcc(y=y, sr=sr)
+    prediction = instrument_classifier.predict(features)
+    instruments = ['piano', 'drum'][np.argmax(prediction)]
 
     return jsonify({
         'instruments': instruments,

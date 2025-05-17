@@ -17,7 +17,19 @@ Selecciona "Commit directly to the main branch" y haz clic en "Commit changes".
 
 Contenido
 Prompt para el Desarrollo de la IA Generativa Profesor de Ritmo
-DescripciónDesarrollar una IA generativa que funcione como una escuela de música virtual enfocada en ritmo, dictado rítmico, teoría musical, práctica de lectura, armonía y apreciación musical. La IA debe ser interactiva, accesible gratuitamente, y soportar múltiples idiomas, con una interfaz similar a MuseScore 4. El proyecto se alojará en GitHub y usará criptomonedas (MetaMask) y métodos tradicionales (PayPal) para financiación.
+Descripción Desarrollar una IA generativa que funcione como una escuela de música virtual enfocada en ritmo, dictado rítmico, teoría musical, práctica de lectura, armonía y apreciación musical. La IA debe ser interactiva, accesible gratuitamente, y soportar múltiples idiomas, con una interfaz similar a MuseScore 4. El proyecto se alojará en GitHub y usará criptomonedas (MetaMask) y métodos tradicionales (PayPal) para financiación.
+# Prompt para Maestro Completo
+
+Eres un profesor de ritmo y música que ayuda a estudiantes de todo el mundo a aprender música funcionalmente. Ofreces las siguientes funcionalidades:
+
+- **Generación de ritmos**: Crea ritmos en diferentes estilos (clásico, jazz) y tempos, generando archivos MIDI.
+- **Generación de armonías**: Genera progresiones armónicas en diferentes tonalidades (por ejemplo, I-IV-V-I, ii-V-I, o con modulaciones).
+- **Identificación de instrumentos**: Analiza archivos de audio y detecta instrumentos usando un clasificador de audio.
+- **Apreciación musical**: Proporciona análisis detallados de obras musicales clásicas (Beethoven, Mozart, Chopin).
+- **Edición de partituras**: Permite editar partituras con soporte para silencios, cambios de clave (sol, fa), y compases personalizados (3/4, 6/8).
+- **Soporte multilingüe**: Interfaz y respuestas en español, inglés, francés, portugués, italiano, hebreo, japonés, coreano, etc.
+
+Responde a las solicitudes del usuario de manera precisa, educativa y amigable, adaptándote al nivel del estudiante (principiante, intermedio, avanzado).
 Requisitos
 
 Módulos Educativos
@@ -116,7 +128,7 @@ Soporte Multilingüe
 Mensajes en español, hebreo, inglés, francés, italiano, chino, japonés, portugués con i18next y mBART.
 
 
-EjemploUsuario: "Genera un ritmo en 6/8, nivel intermedio, tempo 100 BPM, estilo jazz."IA: Genera [negra + dos corcheas, corchea + negra, silencio], muestra partitura, reproduce audio, mensaje: "¡Toca este ritmo a 100 BPM!"
+Ejemplo Usuario: "Genera un ritmo en 6/8, nivel intermedio, tempo 100 BPM, estilo jazz."IA: Genera [negra + dos corcheas, corchea + negra, silencio], muestra partitura, reproduce audio, mensaje: "¡Toca este ritmo a 100 BPM!"
 
 
 Instrucciones para Desarrolladores

@@ -36,7 +36,6 @@ def generate_rhythm():
     beats = data.get('beats', 4)
     style = data.get('style', 'classical')
 
-    # Usar Magenta para generar un ritmo
     drum_track = generator.generate({}, seconds=beats / (tempo / 60))
     stream = music21.stream.Stream()
     stream.append(music21.tempo.MetronomeMark(number=tempo))
@@ -99,6 +98,43 @@ def get_theory():
     }
     return jsonify({
         'theory': theory.get(topic, _("Teoría no encontrada."))
+    })
+
+# Endpoint para generar armonía
+@app.route('/generate-harmony', methods=['POST'])
+def generate_harmony():
+    data = request.json
+    key = data.get('key', 'C major')
+    chords = data.get('chords', 4)
+
+    roman = music21.roman.RomanNumeral(['I', 'IV', 'V', 'I'][:(chords % 4) or 4], key)
+    stream = music21.stream.Stream()
+    for rn in roman:
+        stream.append(rn)
+
+    midi = stream.write('midi', fp='temp_harmony.mid')
+    return jsonify({
+        'harmony': _(f"Progresión de acordes en {key}: {'-'.join([str(r) for r in roman])}"),
+        'midi': midi
+    })
+
+# Endpoint para apreciación musical
+@app.route('/appreciate-music', methods=['POST'])
+def appreciate_music():
+    data = request.json
+    piece = data.get('piece', 'beethoven_symphony_5')
+
+    pieces = {
+        'beethoven_symphony_5': {
+            'title': 'Sinfonía No. 5 de Beethoven',
+            'description': 'Esta pieza es famosa por su motivo inicial de cuatro notas (da-da-da-dum), que representa el "destino tocando a la puerta". Compuesta en 1808, es un ejemplo clásico del período romántico temprano.'
+        }
+    }
+    piece_info = pieces.get(piece, {'title': 'Pieza desconocida', 'description': 'No se encontró información.'})
+
+    return jsonify({
+        'title': _(piece_info['title']),
+        'description': _(piece_info['description'])
     })
 
 # Endpoint para validar respuestas

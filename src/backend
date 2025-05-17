@@ -6,14 +6,7 @@ import numpy as np
 import magenta
 import tensorflow as tf
 from magenta.models.drums_rnn import drums_rnn_sequence_generator
-flask
-flask-babel
-music21
-librosa
-numpy
-magenta
-tensorflow
-gunicorn
+
 
 app = Flask(__name__)
 

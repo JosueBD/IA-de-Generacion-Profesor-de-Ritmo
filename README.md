@@ -1,134 +1,56 @@
-IA Generativa Profesor de Ritmo
- 
-IA Generativa Profesor de Ritmo es una escuela de música virtual impulsada por inteligencia artificial generativa, diseñada para enseñar ritmo, dictado rítmico, teoría musical, práctica de lectura, armonía, y apreciación musical. Dirigida a personas con talento musical que no tienen acceso a profesores o escuelas de arte, esta aplicación ofrece ejercicios interactivos, partituras dinámicas, y audio en tiempo real, con una interfaz inspirada en MuseScore 4. Desarrollada en React Native (app móvil) y React (web), es multilingüe (español, hebreo, inglés, francés, italiano, chino, japonés, portugués) y accesible gratuitamente, financiada por donaciones en criptomonedas (MetaMask) y pagos convencionales (Stripe).
-Características
+**Nota:** Al iniciar el backend, los modelos de IA (Magenta Drums RNN y YAMNet) y los archivos de datos (MIDI, WAV) se descargarán automáticamente si no están presentes en `models/` y `data/`. Asegúrate de tener conexión a internet.
 
-Educación musical integral:
-Ritmo: Patrones rítmicos, síncopas, polirritmias.
-Dictado rítmico: Transcribe ritmos escuchados.
-Teoría musical: Escalas, intervalos, acordes, tonalidad.
-Práctica de lectura: Lectura de partituras rítmicas y melódicas.
-Armonía: Progresiones armónicas, cadencias, modulaciones.
-Apreciación musical: Contexto histórico y análisis estilístico.
+## Estructura del repositorio
 
+- `.github/workflows/`: Configuración de GitHub Actions (`ci.yml` para pruebas y despliegue).
+- `docs/`: Documentación, incluyendo `README.md`, `prompts/prompt-maestro-completo.md`, `prompts/prompts.md` con prompts de IA, y `ejercicios-musicales.md` con ejercicios para estudiantes.
+- `src/`: Código fuente (`src/app/ProfesorDeRitmoApp` para móvil, `src/web` para web, `src/backend` para Python).
+- `data/`: Datasets musicales con `download_data.sh` para descargar archivos MIDI y WAV de ejemplo.
+- `models/`: Modelos de IA preentrenados (`README.md`, `drumm_rnn_model/download_model.sh`, `instrument_classifier/download_yamnet.py`, `instrument_classifier/yamnet_class_map.csv`) con scripts para descarga dinámica.
+- `tests/`: Pruebas unitarias y de integración (`test_backend.py`).
+- `.gitignore`: Excluye `node_modules`, builds, y archivos temporales.
+- `LICENSE`: Licencia MIT.
 
-IA generativa: Crea ejercicios personalizados, ritmos, y explicaciones.
-Interfaz intuitiva: Renderizado de partituras, reproducción de audio, feedback en tiempo real.
-Multilingüe: Español como idioma principal, con soporte para otros idiomas.
-Accesibilidad: Modelo freemium, con donaciones vía MetaMask y Stripe.
-Open-source: Desarrollado en GitHub, abierto a la comunidad.
+## Contribución
 
-Estado del proyecto
+¡Únete al proyecto! Consulta `CONTRIBUTING.md` para más detalles (pendiente de creación). Pasos:
+1. Forkea el repositorio.
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`).
+3. Haz commit (`git commit -m "Añade nueva funcionalidad"`).
+4. Sube la rama (`git push origin feature/nueva-funcionalidad`).
+5. Abre un Pull Request.
 
-Etapa: Prototipo inicial.
-Progreso:
-Configuración de React Native (src/app/ProfesorDeRitmoApp).
-Integración inicial de MetaMask en App.tsx.
-Prompts de IA en docs/prompts.md (Armonía, Apreciación, Interfaz).
+Reporta errores o sugiere mejoras en la sección de Issues.
 
+## Tecnologías
 
-Problemas conocidos:
-Error de sintaxis en src/app/ProfesorDeRitmoApp/package.json (línea 44).
-Configuración incompleta del Android SDK.
+- **Librerías musicales**: Music21, PrettyMIDI, Tone.js, VexFlow, Magenta.
+- **IA generativa**: TensorFlow, PyTorch, Hugging Face (MusicGen, mBART).
+- **Frontend**: React Native (móvil), React (web).
+- **Backend**: Python, Node.js.
+- **Infraestructura**: GitHub, Docker, AWS/Google Cloud.
+- **Financiación**: MetaMask (Polygon), Stripe, Open Collective.
 
+## Accesibilidad
 
-Tareas pendientes:
-Corregir package.json.
-Implementar módulos de IA (ritmo, teoría, etc.).
-Configurar soporte multilingüe y financiación.
+- **Lectores de pantalla**: La interfaz web y móvil es compatible con lectores de pantalla (asegúrate de usar etiquetas ARIA en `src/web` y `src/app`).
+- **Teclados adaptativos**: La navegación está optimizada para teclados (prueba con Tab y Enter en la interfaz).
 
+## Licencia
 
+MIT License - [Ver LICENSE](https://github.com/JosueBD/IA-de-Generacion-Profesor-de-Ritmo/blob/main/LICENSE)
 
-Requisitos
+## Contacto
 
-Node.js: v18 o superior.
-npm: v10 o superior.
-React Native CLI: Última versión.
-Android Studio: Para Android SDK (API 33).
-JDK: 17.
-Python: 3.8+ (para backend).
-Git: Para clonar y contribuir.
+- **Autor**: Josué Borges Díaz ([GitHub](https://github.com/JosueBD))
+- **Correo**: josuepjnv@gmail.com
+- **Comunidad**: [Añade Discord o foro si lo creas]
 
-Instalación
+## Donaciones
 
-Clona el repositorio:
-git clone https://github.com/JosueBD/IA-de-Generacion-Profesor-de-Ritmo.git
-cd IA-de-Generacion-Profesor-de-Ritmo
-
-
-Interfaz móvil (React Native):
-cd src/app/ProfesorDeRitmoApp
-npm install
-
-
-Configura el Android SDK en Android Studio.
-Crea local.properties:echo sdk.dir=C:\\Users\\<TuUsuario>\\AppData\\Local\\Android\\Sdk > local.properties
-
-
-Ejecuta:npx react-native run-android
-
-
-
-
-Interfaz web:
-cd src/web
-npm install
-npm start
-
-
-Backend (Python):
-cd src/backend
-pip install -r requirements.txt
-python main.py
-
-
-
-Estructura del repositorio
-
-.github/workflows/: Configuración de GitHub Actions (pruebas, despliegue).
-docs/: Documentación, incluyendo prompts.md con prompts de IA.
-src/: Código fuente (src/app/ProfesorDeRitmoApp para móvil, src/web para web, src/backend para Python).
-data/: Datasets musicales (MIDI, audio).
-models/: Modelos de IA preentrenados.
-tests/: Pruebas unitarias y de integración.
-.gitignore: Excluye node_modules, builds, etc.
-LICENSE: Licencia MIT.
-
-Contribución
-¡Únete al proyecto! Consulta CONTRIBUTING.md for details. Pasos:
-
-Forkea el repositorio.
-Crea una rama (git checkout -b feature/nueva-funcionalidad).
-Haz commit (git commit -m "Añade nueva funcionalidad").
-Sube la rama (git push origin feature/nueva-funcionalidad).
-Abre un Pull Request.
-
-Reporta errores o sugiere mejoras en Issues.
-Tecnologías
-
-Librerías musicales: Music21, PrettyMIDI, Tone.js, VexFlow, Magenta.
-IA generativa: TensorFlow, PyTorch, Hugging Face (MusicGen, mBART).
-Frontend: React Native (móvil), React (web).
-Backend: Python, Node.js.
-Infraestructura: GitHub, Docker, AWS/Google Cloud.
-Financiación: MetaMask (Polygon), Stripe, Open Collective.
-
-Licencia
-MIT License - https://github.com/JosueBD/IA-de-Generacion-Profesor-de-Ritmo/blob/main/LICENSE
-
-Contacto
-Autor: Josué Borges Díaz (GitHub)
-Correo: josuepjnv@gmail.com
-
-
-Comunidad: [Añade Discord o foro si lo creas]
-
-Donaciones
 Apoya el acceso gratuito:
-MetaMask: 0x2a0EeC585528C3FF59f957ca78acF3270163a6E8
-Stripe: [Añade enlace de Stripe].
+- **MetaMask**: `0x2a0EeC585528C3FF59f957ca78acF3270163a6E8`
+- **Stripe**: [Añade enlace de Stripe]
+- **Open Collective**: [Añade enlace de Open Collective]
 
-Open Collective: [Añade enlace de Open Collective].
-
-
-¡Hagamos que la música sea accesible para todos!
+¡Hagamos que la música sea accesible para todos! 🎶
